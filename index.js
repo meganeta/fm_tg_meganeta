@@ -9,13 +9,13 @@ const bot = new TelegramBot(token, { polling: true });
 // Handle /start command
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, 'Welcome! Click the button below to start.', {
+    bot.sendMessage(chatId, '欢迎捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）', {
         reply_markup: {
             inline_keyboard: [
                 [
                     {
-                        text: 'Click Me',
-                        callback_data: 'button_click'
+                        text: '请点我',
+                        callback_data: 'button_start'
                     }
                 ]
             ]
@@ -27,9 +27,40 @@ bot.onText(/\/start/, (msg) => {
 bot.on('callback_query', (callbackQuery) => {
     const message = callbackQuery.message;
     const chatId = message.chat.id;
+    const userFirstName = callbackQuery.from.first_name;
 
-    if (callbackQuery.data === 'button_click') {
-        bot.sendMessage(chatId, 'Button clicked!');
+    if (callbackQuery.data === 'button_start') {
+        bot.sendMessage(chatId,`${userFirstName} 欢迎光临!`);
+        bot.sendMessage(chatId, '当前状态：待机中...', {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text: '轻柔 🥱',
+                            callback_data: 'mode_1'
+                        }
+                    ],
+                    [
+                        {
+                            text: '挑逗 🥰',
+                            callback_data: 'mode_2'
+                        }
+                    ],
+                    [
+                        {
+                            text: '激烈 😵‍💫',
+                            callback_data: 'mode_3'
+                        }
+                    ],
+                    [
+                        {
+                            text: '魔鬼 😈',
+                            callback_data: 'mode_4'
+                        }
+                    ],
+                ]
+            }
+        });
     }
 });
 
