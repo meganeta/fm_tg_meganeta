@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const WebSocket = require('ws');
 
 // Replace with your bot token
 const token = '6887731995:AAHxY5A2p7Adstq6a0Jmk18_9p0MDQyl4rg';
@@ -11,25 +12,35 @@ let userSelectList = []; // To store user selections
 let speed_list = [];
 let duration_list = [];
 let mode_list = ['轻柔 🥱','挑逗 🥰','常规 😥','激烈 😵‍💫','魔鬼 😈'];
+let init_flg = 1;
+let new_msg_flg = 0;
+
+//New message refreshing
+let message_id;
+let chat_id;
+let TimeThreshold = 120000;
 
 // Handle /tease_start command
 bot.onText(/\/tease_start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    {
-                        text: '请点我',
-                        callback_data: 'button_start'
-                    }
-                ]
-            ]
-        }
-    });
-});
 
-let init_flg = 1;
+    if(init_flg){
+        bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）', {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text: '请点我',
+                            callback_data: 'button_start'
+                        }
+                    ]
+                ]
+            }
+        });
+    }else{
+        handleControlMessage(chatId,0);
+    }
+});
 
 // Handle callback queries
 bot.on('callback_query', (callbackQuery) => {
@@ -42,74 +53,64 @@ bot.on('callback_query', (callbackQuery) => {
         if(data != 'button_start'){
             bot.sendMessage(chatId,`您好 ${userFirstName} 请使用 /tease_start 开始。`);
         } else {
-            init_flg = 0;
-            bot.sendMessage(chatId,`${userFirstName} 开始了捏!`);
-            handleControlMessage(chatId,message,0);
+            if(ws_con_stat){
+                init_flg = 0;
+                //bot.sendMessage(chatId,`${userFirstName} 开始了捏!`);
+                handleControlMessage(chatId,0);
+            } else {
+                bot.sendMessage(chatId,`炮机未连接，请稍后再试捏~`);
+            }
         }
     }else{
-        switch (data) {
-            case 'button_start':
-                if(init_flg == 0){
-                    bot.sendMessage(chatId,`已经开始了哦，请在下方信息选择!`);
-                    handleControlMessage(chatId,message,0);
-                }
-                break;
-            case 'mode_1':
-                handlecase(chatId,message,userFirstName,0,21,5000,3001,0);
-                break;
-            case 'mode_2':
-                handlecase(chatId,message,userFirstName,20,21,5000,3001,1);
-                break;
-            case 'mode_3':
-                handlecase(chatId,message,userFirstName,40,21,5000,3001,2);
-                break;
-            case 'mode_4':
-                handlecase(chatId,message,userFirstName,60,21,5000,3001,3);
-                break;
-            case 'mode_5':
-                handlecase(chatId,message,userFirstName,80,21,5000,3001,4);
-                break;
-            default:
-                responseText = `Unknown option selected by ${userFirstName}.`;
-                bot.sendMessage(chatId, responseText);
+        if(ws_con_stat){
+            switch (data) {
+                case 'button_start':
+                    if(init_flg == 0){
+                        //bot.sendMessage(chatId,`已经开始了哦，请在下方信息选择!`);
+                        handleControlMessage(chatId,0);
+                    }
+                    break;
+                case 'mode_1':
+                    handlecase(chatId,userFirstName,0,21,5000,3001,0);
+                    break;
+                case 'mode_2':
+                    handlecase(chatId,userFirstName,20,21,5000,3001,1);
+                    break;
+                case 'mode_3':
+                    handlecase(chatId,userFirstName,40,21,5000,3001,2);
+                    break;
+                case 'mode_4':
+                    handlecase(chatId,userFirstName,60,21,5000,3001,3);
+                    break;
+                case 'mode_5':
+                    handlecase(chatId,userFirstName,80,21,5000,3001,4);
+                    break;
+                default:
+                    responseText = `Unknown option selected by ${userFirstName}.`;
+                    bot.sendMessage(chatId, responseText);
+            }
+        } else {
+            bot.sendMessage(chatId,`炮机已断开，请使用 /tease_start 重新连接捏~`);
         }
+        
     }
 });
 
-/*
-let executed = false;
-let chatid_stored;
-let message_stored;
-*/
-
-function handlecase(chatId,message,userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode){
-    if (userSelectList.length < 6) {
-        handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId,message);
-        handleControlMessage(chatId,message,1);
+function handlecase(chatId,userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode){
+    if (userSelectList.length < 1) {
+        handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId);
+        if(new_msg_flg){
+            handleControlMessage(chatId,0);
+        } else {
+            handleControlMessage(chatId,1);
+        }
+    } else if (userSelectList.length < 10) {
+        handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId);
+        handleControlMessage(chatId,1);
     }
 }
 
-/*
-// Function to check the condition and execute myFunction only once
-function waitForCondition() {
-    if (!executed && userSelectList.length < 6) {
-        // Execute the function
-        handleControlMessage(chatid_stored,message_stored,0);
-        executed = true; // Set the flag to true to indicate that the function has been executed
-    } else {
-        // Condition is not met or function already executed, wait and check again after a delay
-        setTimeout(waitForCondition, 1000); // Check every 1 second (adjust as needed)
-    }
-}
-*/
-
-let speed_init = true;
-
-function send_machine(val_speed){
-    console.log("Send speed: "+val_speed.toString());
-}
-
-function handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId,message) {
+function handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId) {
     let val_speed = Math.floor(Math.random()*MinVal_Var) + MinVal;
     let duration = Math.floor(Math.random()*MinDuration_Var) + MinDuration;
 
@@ -121,7 +122,7 @@ function handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuratio
         speed_init = false;
     }
 
-    function timeout_exec(chatId,message){
+    function timeout_exec(chatId){
 
         userSelectList.shift();
         speed_list.shift();
@@ -134,21 +135,41 @@ function handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuratio
 
         if(duration_list.length>0){
             // Execute a function after a delay of 2 seconds
-            setTimeout(timeout_exec,duration_list[0],chatId,message);
-            handleControlMessage(chatId,message,1);
+            setTimeout(timeout_exec,duration_list[0],chatId);
+            handleControlMessage(chatId,1);
         } else {
-            handleControlMessage(chatId,message,1);
-            handleControlMessage(chatId,message,0);
+            speed_init = true;
+            handleControlMessage(chatId,1);
         }
     }
 
     if(duration_list.length==1){
         // Execute a function after a delay of 2 seconds
-        setTimeout(timeout_exec,duration_list[0],chatId,message);
+        setTimeout(timeout_exec,duration_list[0],chatId);
     }
 }
 
-function handleControlMessage(chatId,message,modify) {
+let currentTime = 0;
+
+function handleControlMessage(chatId,modify) {
+
+    if(currentTime) {
+        msgTime = new Date();
+        Timepassed = msgTime - currentTime;
+
+        console.log("Time passed: "+Timepassed.toString());
+
+        if (msgTime - currentTime > TimeThreshold){
+            if(modify != 2) {
+                modify = 0;
+                currentTime = new Date();
+            }
+        }
+    }else{
+        currentTime = new Date();
+    }
+
+
     let options = [
                     [
                         {
@@ -192,21 +213,80 @@ function handleControlMessage(chatId,message,modify) {
 
     if (modify){
         bot.editMessageText('当前难度：中等\n当前状态: \n\n'+concatenatedString, {
-            chat_id: message.chat.id,
-            message_id: message.message_id,
+            chat_id: chat_id,
+            message_id: message_id,
             reply_markup: {
                 inline_keyboard: options
             }
+        /*}).then(() => {
+            if (modify == 2) {
+                bot.deleteMessage(chat_id, message_id).then(() => {
+                    console.log(`Message with ID: ${message_id} deleted.`);
+                })
+                .catch((error) => {
+                    console.error('Error deleting message:', error);
+                });
+            }*/
         });
-    }else{
+        
+    }else{        
         bot.sendMessage(chatId, '当前难度：中等\n当前状态: \n\n'+concatenatedString, {
             reply_markup: {
                 inline_keyboard: options
             }
+        }).then((sentMessage) => {
+            chat_id = sentMessage.chat.id;
+            message_id = sentMessage.message_id;
         });
     }
     
     
 }
+
+//Websocket
+// Define the WebSocket endpoint
+const socket = new WebSocket('ws://192.168.99.157:8080');
+
+let speed_init = true;
+
+function send_machine(val_speed){
+    console.log("Send speed: "+val_speed.toString());
+
+    // Create a JSON message
+    const message = {
+        speed: val_speed
+    };
+    
+    // Convert the JSON message to a string
+    const jsonMessage = JSON.stringify(message);
+
+    // Send the JSON message to the server
+    socket.send(jsonMessage);
+}
+
+let ws_con_stat = false;
+
+// Event listener for when the WebSocket connection is opened
+socket.onopen = function(event) {
+    ws_con_stat = true;
+    console.log('WebSocket connection opened.');
+};
+  
+// Event listener for when a message is received from the server
+socket.onmessage = function(event) {
+    console.log('Message received from server:', event.data);
+};
+
+// Event listener for when an error occurs with the WebSocket connection
+socket.onerror = function(error) {
+    ws_con_stat = false;
+    console.error('WebSocket error:', error);
+};
+
+// Event listener for when the WebSocket connection is closed
+socket.onclose = function(event) {
+    ws_con_stat = false;
+    console.log('WebSocket connection closed.');
+};
 
 console.log('Bot is running...');
