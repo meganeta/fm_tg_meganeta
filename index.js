@@ -48,6 +48,7 @@ bot.onText(/\/tease_start/, (msg) => {
 let last_user = "";
 let last_user_count = 0;
 let last_user_cooldown;
+let cd_msg = "";
 // Handle callback queries
 bot.on('callback_query', (callbackQuery) => {
     const message = callbackQuery.message;
@@ -65,6 +66,8 @@ bot.on('callback_query', (callbackQuery) => {
             last_user_cooldown = new Date();
             last_user_count = 0;
         }
+        cd_msg = "冷却中...";
+        handleControlMessage(chatId,0);
         return;
     } else {
         last_user_count++;
@@ -197,16 +200,12 @@ function handleControlMessage(chatId,modify) {
                         {
                             text: mode_list[0], //0-20
                             callback_data: 'mode_1'
-                        },
-                        {
-                            text: mode_list[1], //20-40
-                            callback_data: 'mode_2'
                         }
                     ],
                     [
                         {
-                            text: mode_list[2], //40-60
-                            callback_data: 'mode_3'
+                            text: mode_list[1], //20-40
+                            callback_data: 'mode_2'
                         },
                         {
                             text: mode_list[2], //40-60
@@ -229,7 +228,8 @@ function handleControlMessage(chatId,modify) {
     if (userSelectList.length < 1){
         concatenatedString = "待机中...";
     } else {
-        concatenatedString = userSelectList.slice(1).join('\n');
+        concatenatedString = userSelectList.slice(1).join('\n')+" "+cd_msg;
+        cd_msg = "";
         concatenatedString = "正在执行...\n"+userSelectList[0]+"\n\n执行队列：\n"+concatenatedString;
     }
 
@@ -313,6 +313,7 @@ socket.onclose = function(event) {
 
 console.log('Bot is running...');
 
+/*
 //fake http page host
 const http = require('http');
 const fs = require('fs');
@@ -344,3 +345,4 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 });
+*/
