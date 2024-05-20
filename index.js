@@ -18,14 +18,17 @@ let new_msg_flg = 0;
 //New message refreshing
 let message_id;
 let chat_id;
-let TimeThreshold = 120000;
+let TimeThreshold = 60000*3;
+
+//test mode
+let test_text = "";
 
 // Handle /tease_start command
 bot.onText(/\/tease_start/, (msg) => {
     const chatId = msg.chat.id;
 
     if(init_flg){
-        bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）', {
+        bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）\n Changelog v0.2a\n添加了选择冷却机制（5秒）。\n添加了防止新消息刷屏的机制（冷却3分钟）。\n优化了界面减小消息占用面积。\n出bug敲 https://t.me/meganeta', {
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -42,12 +45,31 @@ bot.onText(/\/tease_start/, (msg) => {
     }
 });
 
+let last_user = "";
+let last_user_count = 0;
+let last_user_cooldown;
 // Handle callback queries
 bot.on('callback_query', (callbackQuery) => {
     const message = callbackQuery.message;
     const chatId = message.chat.id;
     const userFirstName = callbackQuery.from.first_name;
     const data = callbackQuery.data;
+
+    if (userFirstName != last_user) {
+        last_user = userFirstName;
+        last_user_cooldown = new Date();
+        last_user_count = 0;
+    } else if (last_user_count == 3) {
+        cooldown = new Date();
+        if (cooldown-last_user_cooldown > 5000) {
+            last_user_cooldown = new Date();
+            last_user_count = 0;
+        }
+        return;
+    } else {
+        last_user_count++;
+    }
+    
 
     if(init_flg){
         if(data != 'button_start'){
@@ -104,7 +126,7 @@ function handlecase(chatId,userFirstName,MinVal,MinVal_Var,MinDuration,MinDurati
         } else {
             handleControlMessage(chatId,1);
         }
-    } else if (userSelectList.length < 10) {
+    } else if (userSelectList.length < 6) {
         handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId);
         handleControlMessage(chatId,1);
     }
@@ -175,9 +197,7 @@ function handleControlMessage(chatId,modify) {
                         {
                             text: mode_list[0], //0-20
                             callback_data: 'mode_1'
-                        }
-                    ],
-                    [
+                        },
                         {
                             text: mode_list[1], //20-40
                             callback_data: 'mode_2'
@@ -187,15 +207,17 @@ function handleControlMessage(chatId,modify) {
                         {
                             text: mode_list[2], //40-60
                             callback_data: 'mode_3'
+                        },
+                        {
+                            text: mode_list[2], //40-60
+                            callback_data: 'mode_3'
                         }
                     ],
                     [
                         {
                             text: mode_list[3], //60-80
                             callback_data: 'mode_4'
-                        }
-                    ],
-                    [
+                        },
                         {
                             text: mode_list[4], //80-100
                             callback_data: 'mode_5'
@@ -208,7 +230,7 @@ function handleControlMessage(chatId,modify) {
         concatenatedString = "待机中...";
     } else {
         concatenatedString = userSelectList.slice(1).join('\n');
-        concatenatedString = userSelectList[0]+" 执行中..."+"\n"+concatenatedString;
+        concatenatedString = "正在执行...\n"+userSelectList[0]+"\n\n执行队列：\n"+concatenatedString;
     }
 
     if (modify){
