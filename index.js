@@ -49,6 +49,7 @@ let last_user = "";
 let last_user_count = 0;
 let last_user_cooldown;
 let cd_msg = "";
+let cd_msg_saved = "冷却中...";
 // Handle callback queries
 bot.on('callback_query', (callbackQuery) => {
     const message = callbackQuery.message;
@@ -58,16 +59,22 @@ bot.on('callback_query', (callbackQuery) => {
 
     if (userFirstName != last_user) {
         last_user = userFirstName;
-        last_user_cooldown = new Date();
         last_user_count = 0;
     } else if (last_user_count == 3) {
+        cd_msg = "即将冷却...";
+        last_user_cooldown = new Date();
+        last_user_count++;
+    } else if (last_user_count > 3) {        
+        cd_msg = cd_msg_saved;
+        cd_msg_saved = cd_msg_saved + ".";
+        handleControlMessage(chatId,1);
         cooldown = new Date();
         if (cooldown-last_user_cooldown > 5000) {
             last_user_cooldown = new Date();
             last_user_count = 0;
+
+            cd_msg_saved = "冷却中...";
         }
-        cd_msg = "冷却中...";
-        handleControlMessage(chatId,0);
         return;
     } else {
         last_user_count++;
@@ -129,7 +136,7 @@ function handlecase(chatId,userFirstName,MinVal,MinVal_Var,MinDuration,MinDurati
         } else {
             handleControlMessage(chatId,1);
         }
-    } else if (userSelectList.length < 6) {
+    } else if (userSelectList.length < 8) {
         handleGeneration(userFirstName,MinVal,MinVal_Var,MinDuration,MinDuration_Var,mode,chatId);
         handleControlMessage(chatId,1);
     }
