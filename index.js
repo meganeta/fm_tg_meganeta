@@ -81,7 +81,6 @@ bot.on('callback_query', (callbackQuery) => {
         last_user_count++;
     }
     
-
     if(init_flg){
         if(data != 'button_start'){
             bot.sendMessage(chatId,`您好 ${userFirstName} 请使用 /tease_start 开始。`);
