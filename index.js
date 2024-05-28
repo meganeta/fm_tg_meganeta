@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const https = require('https');
 
 // Replace with your bot token
-const token = '6887731995:AAHxY5A2p7Adstq6a0Jmk18_9p0MDQyl4rg';
+const token = '6887731995:AAHKvyKOOVh8O0fu3xO5g4bxckNEIhXRrKc';
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
