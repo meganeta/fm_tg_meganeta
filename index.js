@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const WebSocket = require('ws');
+const https = require('https');
 
 // Replace with your bot token
 const token = '6887731995:AAHxY5A2p7Adstq6a0Jmk18_9p0MDQyl4rg';
@@ -20,80 +21,8 @@ let message_id;
 let chat_id;
 let TimeThreshold = 60000*3;
 
-// Handle /tease_start command
-bot.onText(/\/electrify_start/, (msg) => {
-    const chatId = msg.chat.id;
-
-    bot.sendMessage(chatId, '欢迎开始发电竞技游戏捏，请参阅下列游戏规则（转载自 @luerjia2077）：');
-    
-    bot.sendMessage(chatId, '游戏GAME（一）人数随意\n \
-    确认好撸的人数后，大家投骰子，确认好射精的先后顺序，然后开始撸，期间大家要互相监督，不能停太久，\
-    大家依次射精，如果有人在自己顺序之前射了，就要接受惩罚~消息占用面积 。'
-    /*
-    , {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    {
-                        text: '请点我',
-                        callback_data: 'button_start'
-                    }
-                ]
-            ]
-        }
-        */
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（二）人数随意\n \
-    确认好人数后，大家开始撸动，规定视角；视角内必须看到牛牛，在大家的射精下，最后视角必须记录好精液射在了哪里\
-    （墙，地板，身上......）不能用手接。最好有一人观察是否全部执行。'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（三）3~6人\n （建议玩过几轮，熟悉玩家后进行）\n \
-    开赛前选出一位‘追击员’，其余‘选手’比‘追击员’先开始撸动10秒，随后‘追击员’开始撸动，‘选手’要抢先在‘追击员’之前射精，\
-    不然视为失败，失败者要把射出的精液抹回牛牛上，自己龟头责1分钟。'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（四）2~8人上下\n （可由一位管理员发起游戏）\n \
-    开始撸动，管理倒计时20分钟，并在15，10，5分钟时设置‘检查点’记录下选手大致的速度，要是超过20分钟，那么没射精的选手会被冠以‘牛牛王’的称号 \
-    （除非卫冕，否则一天后删除），超过倒计时可以选择不射精哦~'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（五）3~7人上下\n \
-    撸到快射后忍住，寸止一次（热身），正式开始游戏\n （建议多人游玩）\n 由不参与的管理/群友，用随机轮盘之类的方式在热身结束 \
-    正式撸动8分钟后开始知名选手,被指到的选手需要1分内射精，没射出来视为失败；要是没有指名的时候射精也视为失败。\
-    失败惩罚：游戏结束后，在大家的注视下，用最快速度撸射。'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（六）3~5人上下\n （有些地狱，建议养好身体）\n \
-    每人在游戏中必须射精一次，游戏开始后，选手们都有一次‘转嫁权’。\n \
-    选择你想转嫁的选手，两人暂时停下撸动，投骰子，或者可以将一次射精转嫁对方，失败反之。\n \
-    直到每位选手射完目标为止结束（可能不用射，可能三次？）。（坏笑）\n \
-    (拥有最高次数的选手可以获得一次‘平均权’，强制所有人投骰子，当获得中位数以上点数的时候，可以将次数报复给任意先前转嫁次数给自己的选手）。'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（七）2~7人上下\n （撸啊撸啊撸啊）\n \
-    这是一场冲刺局，选手在开始前请用大量润滑剂润滑，然后随意撸动，游戏开始后，请快速激烈地射出来吧~\n \
-    最后一名今晚寸止一次不准射精~'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（八）1~4人上下\n \
-    选手准备好后，请一位不参与的管理/群友，来随机指定一个数字（1~100），数字就是选手要撸动的次数（上下以来回算一次）。\
-    选手要在2分钟内撸完指定次数，可以让管理/群友倒计时，结束未完成者，下一回合的数字+10。\
-    谁能坚持到最后呢~'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（九）2~8人上下\n （建议所有选手有充足时间再进行）\n \
-    休闲局~ 选手可以用任何姿势、速度、手法、道具来辅助自己撸动，选手可以在群里投骰子，进行撸动相关的真心话大冒险，最大的一方决定问题/指令，其余回答。\n\
-    大冒险例：寸止一次，拍蛋蛋几次，不允许命令射精相关。\n\
-    真心话例：内裤的颜色，上次撸射是什么时候...等（禁政，禁盒，禁冒犯...）\n 可以不射精，纯撸着玩也可以哦~'
-    );
-
-    bot.sendMessage(chatId, '游戏GAME（十）3~6人上下\n （来看看运气吧~）\n \
-    所有选手撸动150下可以投一枚骰子，只要大于等于5点，就可以计1分，当达到4点时即可获胜，与此同时其余选手需要2分钟内射出来，未完成即败北。\
-    需要为肉棒粥贡献本场游戏射精后的牛牛图片。'
-    );
-});
+//channel id to forward all messages
+let channel_id = '@meganeta_bot';
 
 // Handle /tease_start command
 bot.onText(/\/tease_start/, (msg) => {
@@ -399,35 +328,65 @@ socket.onclose = function(event) {
 console.log('Bot is running...');
 
 /*
-//fake http page host
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+// Handle /electrify_start command
+bot.onText(/\/electrify_start/, (msg) => {
+    const chatId = msg.chat.id;
 
-const hostname = '127.0.0.1';
-const port = 3000;
+    bot.sendMessage(chatId, '欢迎开始发电竞技游戏捏，请参阅下列游戏规则（转载自 @luerjia2077）：');
+    
+    bot.sendMessage(chatId, '游戏GAME（一）人数随意\n \
+    确认好撸的人数后，大家投骰子，确认好射精的先后顺序，然后开始撸，期间大家要互相监督，不能停太久，\
+    大家依次射精，如果有人在自己顺序之前射了，就要接受惩罚~消息占用面积 。'
+    );
 
-const server = http.createServer((req, res) => {
-    if (req.method === 'GET' && req.url === '/') {
-        fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
-            if (err) {
-                res.statusCode = 500;
-                res.setHeader('Content-Type', 'text/plain');
-                res.end('Internal Server Error');
-                return;
-            }
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/html');
-            res.end(data);
-        });
-    } else {
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Not Found');
-    }
-});
+    bot.sendMessage(chatId, '游戏GAME（二）人数随意\n \
+    确认好人数后，大家开始撸动，规定视角；视角内必须看到牛牛，在大家的射精下，最后视角必须记录好精液射在了哪里\
+    （墙，地板，身上......）不能用手接。最好有一人观察是否全部执行。'
+    );
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
+    bot.sendMessage(chatId, '游戏GAME（三）3~6人\n （建议玩过几轮，熟悉玩家后进行）\n \
+    开赛前选出一位‘追击员’，其余‘选手’比‘追击员’先开始撸动10秒，随后‘追击员’开始撸动，‘选手’要抢先在‘追击员’之前射精，\
+    不然视为失败，失败者要把射出的精液抹回牛牛上，自己龟头责1分钟。'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（四）2~8人上下\n （可由一位管理员发起游戏）\n \
+    开始撸动，管理倒计时20分钟，并在15，10，5分钟时设置‘检查点’记录下选手大致的速度，要是超过20分钟，那么没射精的选手会被冠以‘牛牛王’的称号 \
+    （除非卫冕，否则一天后删除），超过倒计时可以选择不射精哦~'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（五）3~7人上下\n \
+    撸到快射后忍住，寸止一次（热身），正式开始游戏\n （建议多人游玩）\n 由不参与的管理/群友，用随机轮盘之类的方式在热身结束 \
+    正式撸动8分钟后开始知名选手,被指到的选手需要1分内射精，没射出来视为失败；要是没有指名的时候射精也视为失败。\
+    失败惩罚：游戏结束后，在大家的注视下，用最快速度撸射。'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（六）3~5人上下\n （有些地狱，建议养好身体）\n \
+    每人在游戏中必须射精一次，游戏开始后，选手们都有一次‘转嫁权’。\n \
+    选择你想转嫁的选手，两人暂时停下撸动，投骰子，或者可以将一次射精转嫁对方，失败反之。\n \
+    直到每位选手射完目标为止结束（可能不用射，可能三次？）。（坏笑）\n \
+    (拥有最高次数的选手可以获得一次‘平均权’，强制所有人投骰子，当获得中位数以上点数的时候，可以将次数报复给任意先前转嫁次数给自己的选手）。'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（七）2~7人上下\n （撸啊撸啊撸啊）\n \
+    这是一场冲刺局，选手在开始前请用大量润滑剂润滑，然后随意撸动，游戏开始后，请快速激烈地射出来吧~\n \
+    最后一名今晚寸止一次不准射精~'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（八）1~4人上下\n \
+    选手准备好后，请一位不参与的管理/群友，来随机指定一个数字（1~100），数字就是选手要撸动的次数（上下以来回算一次）。\
+    选手要在2分钟内撸完指定次数，可以让管理/群友倒计时，结束未完成者，下一回合的数字+10。\
+    谁能坚持到最后呢~'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（九）2~8人上下\n （建议所有选手有充足时间再进行）\n \
+    休闲局~ 选手可以用任何姿势、速度、手法、道具来辅助自己撸动，选手可以在群里投骰子，进行撸动相关的真心话大冒险，最大的一方决定问题/指令，其余回答。\n\
+    大冒险例：寸止一次，拍蛋蛋几次，不允许命令射精相关。\n\
+    真心话例：内裤的颜色，上次撸射是什么时候...等（禁政，禁盒，禁冒犯...）\n 可以不射精，纯撸着玩也可以哦~'
+    );
+
+    bot.sendMessage(chatId, '游戏GAME（十）3~6人上下\n （来看看运气吧~）\n \
+    所有选手撸动150下可以投一枚骰子，只要大于等于5点，就可以计1分，当达到4点时即可获胜，与此同时其余选手需要2分钟内射出来，未完成即败北。\
+    需要为肉棒粥贡献本场游戏射精后的牛牛图片。'
+    );
 });
 */
