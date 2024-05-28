@@ -274,10 +274,6 @@ function handleControlMessage(chatId,modify) {
     
 }
 
-//Websocket
-// Define the WebSocket endpoint
-const socket = new WebSocket('ws://192.168.99.157:8080');
-
 let speed_init = true;
 
 function send_machine(val_speed){
@@ -294,11 +290,15 @@ function send_machine(val_speed){
         const jsonMessage = JSON.stringify(message);
 
         // Send the JSON message to the server
+        //FMClient.send(jsonMessage);
         socket.send(jsonMessage);
     } else {
         console.log("Cyber FM");
     }
 }
+
+// Define the WebSocket endpoint
+const socket = new WebSocket('ws://192.168.99.157:8080');
 
 let ws_con_stat = false;
 
@@ -326,6 +326,143 @@ socket.onclose = function(event) {
 };
 
 console.log('Bot is running...');
+
+/*
+//Replace with your ssl token
+const privateKey = `
+-----BEGIN PRIVATE KEY-----
+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
+Lx1lDEMZcgwFxoM9E7wfw5EEkEcxKw==
+-----END PRIVATE KEY-----
+`;
+
+const certificate = `
+-----BEGIN CERTIFICATE-----
+MIIFOTCCAyGgAwIBAgIUCK3WLffz8cXB2HOEkmm04FiMpQcwDQYJKoZIhvcNAQEL
+BQAwFTETMBEGA1UEAwwKc2VydmVyLmNvbTAeFw0yMzA0MTQwMDMwMzZaFw0zMzA0
+MTEwMDMwMzZaMBUxEzARBgNVBAMMCnNlcnZlci5jb20wggIiMA0GCSqGSIb3DQEB
+AQUAA4ICDwAwggIKAoICAQCUnczE3Hxgwb2t6+AUEttE+XLbJjAuX+lh9+jmaZqo
+W9G/rr6imx9b6KcV4TuIOoZmD53/GT7/ekelGT/nJUqfW2oERKuRyaD2UCbG0Pr+
+hev5eQ2qCBoYGXLwAIbTvgLu1okdfvlyMYZM0D6RRcJHfL/zQBMMbJMPGU9q4knP
+pbIqlr5YlZ2cK0Nsxva05FL1EcpN880GHNoKGzH5uiVlmmt+3M5wlFztGjK1Q0FD
+oQC1Y+U4jDCW6Po2WSBUhk9c3KK9iL4VqlZllt89a9PDdZxaYSRK4j04qp7PTNN2
+We00Tn43QEPSvBvxBjS2Iy93ZDm8ox71eUJxjSvwIT6b3FjofrTIldA0FLc4ufiM
+03b44Oa2fx9fzgToQk3AXH7RJXlUOpB09uVzZMhcqTRDoFcFtepZ18VmV4PI+rP3
+g7LB3AOhacf9XJ24++/zRGioQ4NIdug/HB8aHT31Q4VFJ7pm1VW7mMLB8BV3XpgZ
+297WTo0zI2J6ngw8DuewxzpXFHC47+F1z0L74B6f0MGicaco/TQXesYmHUE1SMyF
+pNUNXokMAwEOfME+S9vWA7AcJjpG0weKarm9DC5bTTBy7vdFKhkRW+UzQyc86eFQ
+1sgo4MTR8F0AsaO/cK108lDLs4ge3htNHqbr77FfTaGjdEqZmSrEBBhuFUD2bXH6
+zwIDAQABo4GAMH4wHQYDVR0OBBYEFNY4iHHBuyJPFHziA/+gQp3iVdUqMB8GA1Ud
+IwQYMBaAFNY4iHHBuyJPFHziA/+gQp3iVdUqMA8GA1UdEwEB/wQFMAMBAf8wKwYD
+VR0RBCQwIoIKc2VydmVyLmNvbYIOd3d3LnNlcnZlci5uZXSHBAoRNTEwDQYJKoZI
+hvcNAQELBQADggIBADGpOWXwEaldpQPJ2VgI7w9eS6kva6/jv4KJOH4eX4pPYVqj
+2b9pDViGIoLEE1tFBNjuKxjS2kmu7ia823ZpvgE4YnoGhBHwV04Ga9EfnOf6wk9v
+iBLVRWE4llQp6NUWJ+PSZWs7TmlrG+zllwe/Q49sC+1t7GXefEgvx8cCHExZNdz1
+2F2KJBUbWBTu6nmm6oRriU3xvgOepOyTNMe4JjwIf+6A1cUjzF0mncpYRvYdfPbO
+YrvJJJrGgqcIjTk3zLvu3UdSfnDX1buGtkyHk1rJ4oJ26WnsSBsg999xYqpksNwi
+lrPNnDrtUOrK7yEs0wBTd/uomz911X0OuPpFlZ08uCG/YIsm5lte6GzG4oc4ErNU
+6fDHOFDgPFSHKrEzf2c4JSDNg8E9rK/j/7nMQpjvX6bLpW9OjNmFcwoSR01AQi0u
+TNRdY/l+AGSNbCzsV7sFMG9hhS/NfaFOPX6vmRe1iVDS8z5xS8ND4awWOGuZUI+7
+J5arQ6n6EwB43N6rGunGCjxXM/gR8i5X9kOhjYqr15ABf93jVOSzHLn14mjmLrXa
+OU2PntzNAb/NsyI9soAgn8SYSwODlxBMr7m/lpY73EoNSRttDfpKgseR9kO+2+My
+bpGZwHfd6CiUxwq55mi3TX2c9K6VXC9cvhdivLbXr/fKGs1yP0pC5NOdPMtK
+-----END CERTIFICATE-----
+`;
+
+//Websocket server
+// Create an HTTPS server
+const server = https.createServer({
+    key: privateKey,
+    cert: certificate
+  });
+
+const wss = new WebSocket.Server({ server });
+const clients = new Map();
+
+let ws_con_stat = false;
+
+wss.on('connection', (ws) => {
+
+    const clientId = uuidv4();
+    clients.set(clientId, ws);
+    console.log(`Client connected: ${clientId}`);
+  
+    // Handle incoming messages from clients
+    ws.on('message', (message) => {
+        console.log(`Received message from ${clientId}: ${message}`);
+        const parsedMessage = JSON.parse(message);
+
+        // Example: Sending a message to a specific client
+        if (parsedMessage.type === 'FM_CON') {
+            const FMClientId = parsedMessage.targetClientId;
+            const FMClient = clients.get(FMClientId);
+            ws_con_stat = true;
+        }
+    });
+
+    // Handle client disconnections
+    ws.on('close', () => {
+        clients.delete(clientId);
+        console.log(`Client disconnected: ${clientId}`);
+        if (clientId == targetClientId) {
+            ws_con_stat = false;
+        }
+    });
+});
+  
+// Start the HTTPS server
+server.listen(8080, () => {
+console.log('HTTPS server listening on port 8080');
+});
+*/
 
 /*
 // Handle /electrify_start command
