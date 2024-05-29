@@ -26,10 +26,12 @@ let channel_id = '@meganeta_bot';
 
 // Handle /tease_start command
 bot.onText(/\/tease_start/, (msg) => {
+    connectWebSocket();
+
     const chatId = msg.chat.id;
 
     if(init_flg){
-        bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（测试中...）\n Changelog v0.2a\n添加了选择冷却机制（5秒）。\n添加了防止新消息刷屏的机制（冷却3分钟）。\n优化了界面减小消息占用面积。\n出bug敲 https://t.me/meganeta', {
+        bot.sendMessage(chatId, '欢迎来调教メガネタ捏！请按下方按钮来进入炮机/郊狼群控模式！（实装中...）\n Changelog v0.2b\n警告⚠：炮机已实装，请手下留情，会出人命的（\n添加了速度倍率用于调整上限（需要密码）。\n处于安全考虑，放弃了远程部署。\n添加了炮机重连机能。\n添加了选择冷却机制（5秒）。\n添加了防止新消息刷屏的机制（冷却3分钟）。\n优化了界面减小消息占用面积。\n出bug或投喂敲 https://t.me/meganeta', {
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -104,19 +106,19 @@ bot.on('callback_query', (callbackQuery) => {
                     }
                     break;
                 case 'mode_1':
-                    handlecase(chatId,userFirstName,0,31,2000,8001,0);
+                    handlecase(chatId,userFirstName,5,16,5000,15001,0);
                     break;
                 case 'mode_2':
-                    handlecase(chatId,userFirstName,20,31,2000,8001,1);
+                    handlecase(chatId,userFirstName,20,31,5000,15001,1);
                     break;
                 case 'mode_3':
-                    handlecase(chatId,userFirstName,40,31,2000,8001,2);
+                    handlecase(chatId,userFirstName,40,31,5000,15001,2);
                     break;
                 case 'mode_4':
-                    handlecase(chatId,userFirstName,60,31,2000,8001,3);
+                    handlecase(chatId,userFirstName,60,31,5000,15001,3);
                     break;
                 case 'mode_5':
-                    handlecase(chatId,userFirstName,80,21,2000,8001,4);
+                    handlecase(chatId,userFirstName,80,21,5000,15001,4);
                     break;
                 default:
                     responseText = `Unknown option selected by ${userFirstName}.`;
@@ -196,6 +198,10 @@ function handleControlMessage(chatId,modify) {
             if(modify != 2) {
                 modify = 0;
                 currentTime = new Date();
+                if (ws_con_stat == false){
+                    socket.close();
+                    connectWebSocket();
+                }
             }
         }
     }else{
@@ -296,33 +302,38 @@ function send_machine(val_speed){
     }
 }
 
-// Define the WebSocket endpoint
-const socket = new WebSocket('ws://192.168.99.157:8080');
-
 let ws_con_stat = false;
+let socket;
 
-// Event listener for when the WebSocket connection is opened
-socket.onopen = function(event) {
-    ws_con_stat = true;
-    console.log('WebSocket connection opened.');
-};
-  
-// Event listener for when a message is received from the server
-socket.onmessage = function(event) {
-    console.log('Message received from server:', event.data);
-};
+function connectWebSocket() {
 
-// Event listener for when an error occurs with the WebSocket connection
-socket.onerror = function(error) {
-    ws_con_stat = false;
-    console.error('WebSocket error:', error);
-};
+    // Define the WebSocket endpoint
+    socket = new WebSocket('ws://192.168.99.157:8080');
 
-// Event listener for when the WebSocket connection is closed
-socket.onclose = function(event) {
-    ws_con_stat = false;
-    console.log('WebSocket connection closed.');
-};
+    // Event listener for when the WebSocket connection is opened
+    socket.onopen = function(event) {
+        ws_con_stat = true;
+        console.log('WebSocket connection opened.');
+    };
+    
+    // Event listener for when a message is received from the server
+    socket.onmessage = function(event) {
+        console.log('Message received from server:', event.data);
+    };
+
+    // Event listener for when an error occurs with the WebSocket connection
+    socket.onerror = function(error) {
+        ws_con_stat = false;
+        console.error('WebSocket error:', error);
+        console.log('Retry every 3 minutes');
+    };
+
+    // Event listener for when the WebSocket connection is closed
+    socket.onclose = function(event) {
+        ws_con_stat = false;
+        console.log('WebSocket connection closed.');
+    };
+}
 
 console.log('Bot is running...');
 
